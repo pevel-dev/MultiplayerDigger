@@ -55,7 +55,7 @@ namespace Digger
             PutNPointsOnMap(terrainLimit, Items.Terrain);
             PutNPointsOnMap(bombLimit, Items.Bomb);
             PutNPointsOnMap(madMonsterLimit, Items.MadMonster);
-            PutNPointsOnMap(2, Items.Player);
+            PutNPointsOnMap(1, Items.Player);
         }
 
         private void CreateMap()

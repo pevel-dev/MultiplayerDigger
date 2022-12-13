@@ -9,19 +9,25 @@ namespace Digger
     {
         public const int ElementSize = 32;
         public List<CreatureAnimation> Animations = new List<CreatureAnimation>();
+        private Game gameSession;
 
+        public GameState(Game game)
+        {
+            gameSession = game;
+        }
+        
         public void BeginAct()
         {
             Animations.Clear();
-            for (var x = 0; x < Game.MapWidth; x++)
-            for (var y = 0; y < Game.MapHeight; y++)
+            for (var x = 0; x < gameSession.MapWidth; x++)
+            for (var y = 0; y < gameSession.MapHeight; y++)
             {
-                var creature = Game.Map[x, y];
+                var creature = gameSession.Map[x, y];
                 if (creature == null) continue;
-                var command = creature.Act(x, y);
+                var command = creature.Act(x, y, gameSession);
 
-                if (x + command.DeltaX < 0 || x + command.DeltaX >= Game.MapWidth || y + command.DeltaY < 0 ||
-                    y + command.DeltaY >= Game.MapHeight)
+                if (x + command.DeltaX < 0 || x + command.DeltaX >= gameSession.MapWidth || y + command.DeltaY < 0 ||
+                    y + command.DeltaY >= gameSession.MapHeight)
                     throw new Exception($"The object {creature.GetType()} falls out of the game field");
 
                 Animations.Add(
@@ -40,18 +46,18 @@ namespace Digger
         public void EndAct()
         {
             var creaturesPerLocation = GetCandidatesPerLocation();
-            for (var x = 0; x < Game.MapWidth; x++)
-            for (var y = 0; y < Game.MapHeight; y++)
-                Game.Map[x, y] = SelectWinnerCandidatePerLocation(creaturesPerLocation, x, y);
+            for (var x = 0; x < gameSession.MapWidth; x++)
+            for (var y = 0; y < gameSession.MapHeight; y++)
+                gameSession.Map[x, y] = SelectWinnerCandidatePerLocation(creaturesPerLocation, x, y, gameSession);
         }
 
-        private static ICreature SelectWinnerCandidatePerLocation(List<ICreature>[,] creatures, int x, int y)
+        private static ICreature SelectWinnerCandidatePerLocation(List<ICreature>[,] creatures, int x, int y, Game gameSession)
         {
             var candidates = creatures[x, y];
             var aliveCandidates = candidates.ToList();
             foreach (var candidate in candidates)
             foreach (var rival in candidates)
-                if (rival != candidate && candidate.DeadInConflict(rival))
+                if (rival != candidate && candidate.DeadInConflict(rival, gameSession))
                     aliveCandidates.Remove(candidate);
             if (aliveCandidates.Count > 1)
                 throw new Exception(
@@ -62,9 +68,9 @@ namespace Digger
 
         private List<ICreature>[,] GetCandidatesPerLocation()
         {
-            var creatures = new List<ICreature>[Game.MapWidth, Game.MapHeight];
-            for (var x = 0; x < Game.MapWidth; x++)
-            for (var y = 0; y < Game.MapHeight; y++)
+            var creatures = new List<ICreature>[gameSession.MapWidth, gameSession.MapHeight];
+            for (var x = 0; x < gameSession.MapWidth; x++)
+            for (var y = 0; y < gameSession.MapHeight; y++)
                 creatures[x, y] = new List<ICreature>();
             foreach (var e in Animations)
             {

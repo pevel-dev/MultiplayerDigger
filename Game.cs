@@ -6,7 +6,6 @@ namespace Digger
     public class Game
     {
         public ICreature[,] Map;
-        private int _scores = 0;
         public int Scores
         {
             get => _scores;
@@ -21,15 +20,35 @@ namespace Digger
             }
         }
 
-        public bool IsOver;
+        public bool IsOver
+        {
+            get => _isOver;
+            set
+            {
+                if (_isOver)
+                    throw new Exception("Игра уже закончена. Создайте новую игру чтобы играть дальше");
+                _isOver = value;
+            }
+        }
 
         public Keys KeyPressed;
-        public int MapWidth => Map.GetLength(0);
-        public int MapHeight => Map.GetLength(1);
 
-        public void CreateMap()
+        public int MapWidth
         {
-            var generator = new MapGenerator(16, 15, 1,24,10,1,100,0);
+            get => Map.GetLength(0);
+        }
+
+        public int MapHeight
+        {
+            get => Map.GetLength(1);
+        }
+        
+        private int _scores = 0;
+        private bool _isOver = false;
+
+        public Game()
+        {
+            var generator = new MapGenerator(16, 15, 1,24,10,0,100,0);
             var map = generator.Map;
             Map = CreatureMapCreator.CreateMap(map);
         }

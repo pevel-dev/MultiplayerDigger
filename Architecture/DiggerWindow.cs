@@ -13,14 +13,16 @@ namespace Digger
         private readonly GameState gameState;
         private readonly HashSet<Keys> pressedKeys = new HashSet<Keys>();
         private int tickCount;
+        private Game gameSession;
 
 
-        public DiggerWindow(DirectoryInfo imagesDirectory = null)
+        public DiggerWindow(Game game, DirectoryInfo imagesDirectory = null)
         {
-            gameState = new GameState();
+            gameSession = game;
+            gameState = new GameState(game);
             ClientSize = new Size(
-                GameState.ElementSize * Game.MapWidth,
-                GameState.ElementSize * Game.MapHeight + GameState.ElementSize);
+                GameState.ElementSize * game.MapWidth,
+                GameState.ElementSize * game.MapHeight + GameState.ElementSize);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             if (imagesDirectory == null)
                 imagesDirectory = new DirectoryInfo("Images");
@@ -42,25 +44,25 @@ namespace Digger
         protected override void OnKeyDown(KeyEventArgs e)
         {
             pressedKeys.Add(e.KeyCode);
-            Game.KeyPressed = e.KeyCode;
+            gameSession.KeyPressed = e.KeyCode;
         }
 
         protected override void OnKeyUp(KeyEventArgs e)
         {
             pressedKeys.Remove(e.KeyCode);
-            Game.KeyPressed = pressedKeys.Any() ? pressedKeys.Min() : Keys.None;
+            gameSession.KeyPressed = pressedKeys.Any() ? pressedKeys.Min() : Keys.None;
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.TranslateTransform(0, GameState.ElementSize);
             e.Graphics.FillRectangle(
-                Brushes.Black, 0, 0, GameState.ElementSize * Game.MapWidth,
-                GameState.ElementSize * Game.MapHeight);
+                Brushes.Black, 0, 0, GameState.ElementSize * gameSession.MapWidth,
+                GameState.ElementSize * gameSession.MapHeight);
             foreach (var a in gameState.Animations)
                 e.Graphics.DrawImage(bitmaps[a.Creature.GetImageFileName()], a.Location);
             e.Graphics.ResetTransform();
-            e.Graphics.DrawString(Game.Scores.ToString(), new Font("Arial", 16), Brushes.Green, 0, 0);
+            e.Graphics.DrawString(gameSession.Scores.ToString(), new Font("Arial", 16), Brushes.Green, 0, 0);
         }
 
         private void TimerTick(object sender, EventArgs args)
